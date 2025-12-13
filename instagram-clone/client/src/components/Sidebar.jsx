@@ -78,6 +78,19 @@ const Sidebar = () => {
       <div className="mt-auto">
         <ul className="sidebar-nav">
           <li>
+            <button
+              className="btn btn-link text-decoration-none w-100 text-start d-flex align-items-center"
+              onClick={() => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                document.documentElement.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
+              }}
+              style={{ color: 'var(--text-primary)', padding: '12px 16px', borderRadius: '8px' }}
+            >
+              <i className="bi bi-moon" style={{fontSize: '24px', marginRight: '16px', width: '24px'}}></i>
+              Switch Theme
+            </button>
+          </li>
+          <li>
             <Link to="/more" className={isActive('/more')}>
               <i className="bi bi-list"></i>
               More
