@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Explore from './pages/Explore';
+import Search from './pages/Search';
 import CreatePost from './pages/CreatePost';
 import Loader from './components/Loader';
 
@@ -37,13 +38,10 @@ const PublicRoute = ({ children }) => {
 // Layout Component
 const Layout = ({ children }) => {
   return (
-    <div className="d-flex">
+    <>
       <Sidebar />
-      <div className="main-content">
-        <Navbar />
-        {children}
-      </div>
-    </div>
+      {children}
+    </>
   );
 };
 
@@ -79,6 +77,16 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <Home />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/search"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Search />
                     </Layout>
                   </ProtectedRoute>
                 }

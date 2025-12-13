@@ -65,7 +65,7 @@ const Register = () => {
 
     const result = await register(submitData);
     if (result.success) {
-      setTimeout(() => navigate('/'), 100);
+      navigate('/', { replace: true });
     }
   };
 

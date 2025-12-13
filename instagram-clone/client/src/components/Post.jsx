@@ -1,101 +1,53 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
 
-const Post = ({ post, onUpdate }) => {
-  const { user } = useAuth();
-  const [isLiked, setIsLiked] = useState(post.likes.some(like => like._id === user?.id));
-  const [likesCount, setLikesCount] = useState(post.likes.length);
+const Post = ({ post }) => {
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [likesCount, setLikesCount] = useState(post.likes);
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState(post.comments || []);
   const [showComments, setShowComments] = useState(false);
 
-  const handleLike = async () => {
-    try {
-      const response = await api.post(`/posts/${post._id}/like`);
-      setIsLiked(response.data.isLiked);
-      setLikesCount(response.data.likesCount);
-    } catch (error) {
-      console.error('Error liking post:', error);
-    }
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
   };
 
-  const handleComment = async (e) => {
+  const handleSave = () => {
+    setIsSaved(!isSaved);
+  };
+
+  const handleComment = (e) => {
     e.preventDefault();
     if (!comment.trim()) return;
-
-    try {
-      const response = await api.post(`/posts/${post._id}/comment`, {
-        text: comment
-      });
-      setComments([...comments, response.data.comment]);
-      setComment('');
-    } catch (error) {
-      console.error('Error commenting:', error);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      try {
-        await api.delete(`/posts/${post._id}`);
-        if (onUpdate) onUpdate();
-      } catch (error) {
-        console.error('Error deleting post:', error);
-      }
-    }
-  };
-
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
+    // Add comment logic here
+    setComment('');
   };
 
   return (
     <div className="post-card">
       {/* Post Header */}
       <div className="post-header">
-        <div className="d-flex align-items-center">
-          <Link to={`/profile/${post.user.username}`} className="text-decoration-none">
+        <div className="post-user-info">
+          <Link to={`/profile/${post.user.username}`}>
             <img
               src={post.user.profilePicture}
               alt={post.user.username}
-              className="profile-picture me-3"
+              className="post-avatar"
             />
           </Link>
           <div>
-            <Link
-              to={`/profile/${post.user.username}`}
-              className="text-decoration-none fw-bold"
-              style={{ color: 'var(--text-primary)' }}
-            >
+            <Link to={`/profile/${post.user.username}`} className="post-username">
               {post.user.username}
             </Link>
             {post.location && (
-              <div className="text-muted-instagram small">{post.location}</div>
+              <div className="post-location">{post.location}</div>
             )}
           </div>
         </div>
-        {post.user._id === user?.id && (
-          <div className="dropdown">
-            <button
-              className="btn btn-link text-decoration-none"
-              data-bs-toggle="dropdown"
-            >
-              <i className="bi bi-three-dots"></i>
-            </button>
-            <ul className="dropdown-menu">
-              <li>
-                <button className="dropdown-item text-danger" onClick={handleDelete}>
-                  Delete Post
-                </button>
-              </li>
-            </ul>
-          </div>
-        )}
+        <button className="post-options">
+          <i className="bi bi-three-dots"></i>
+        </button>
       </div>
 
       {/* Post Image */}
@@ -103,92 +55,79 @@ const Post = ({ post, onUpdate }) => {
 
       {/* Post Actions */}
       <div className="post-actions">
-        <div className="d-flex align-items-center">
-          <button
-            className={`like-button me-3 ${isLiked ? 'liked' : ''}`}
-            onClick={handleLike}
-          >
+        <div className="post-actions-left">
+          <button className={`action-btn ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
             <i className={`bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}`}></i>
           </button>
-          <button
-            className="like-button me-3"
-            onClick={() => setShowComments(!showComments)}
-          >
+          <button className="action-btn">
             <i className="bi bi-chat"></i>
           </button>
+          <button className="action-btn">
+            <i className="bi bi-send"></i>
+          </button>
         </div>
+        <button className={`action-btn ${isSaved ? 'saved' : ''}`} onClick={handleSave}>
+          <i className={`bi ${isSaved ? 'bi-bookmark-fill' : 'bi-bookmark'}`}></i>
+        </button>
       </div>
 
-      {/* Post Info */}
-      <div className="post-info">
-        {likesCount > 0 && (
-          <div className="fw-bold mb-1">
-            {likesCount} {likesCount === 1 ? 'like' : 'likes'}
-          </div>
-        )}
+      {/* Post Likes */}
+      {likesCount > 0 && (
+        <div className="post-likes">
+          {likesCount.toLocaleString()} likes
+        </div>
+      )}
 
-        {post.caption && (
-          <div className="mb-2">
-            <Link
-              to={`/profile/${post.user.username}`}
-              className="text-decoration-none fw-bold me-2"
-              style={{ color: 'var(--text-primary)' }}
-            >
-              {post.user.username}
-            </Link>
-            {post.caption}
-          </div>
-        )}
+      {/* Post Caption */}
+      {post.caption && (
+        <div className="post-caption">
+          <Link to={`/profile/${post.user.username}`} className="post-caption-username">
+            {post.user.username}
+          </Link>
+          {post.caption}
+        </div>
+      )}
 
-        {comments.length > 0 && !showComments && (
-          <button
-            className="btn btn-link p-0 text-muted-instagram text-decoration-none"
-            onClick={() => setShowComments(true)}
-          >
-            View all {comments.length} comments
+      {/* Post Comments */}
+      <div className="post-comments">
+        {post.comments.length > 2 && (
+          <button className="view-comments" onClick={() => setShowComments(!showComments)}>
+            View all {post.comments.length} comments
           </button>
         )}
-
-        {showComments && (
-          <div className="comments-section">
-            {comments.slice(-3).map((comment, index) => (
-              <div key={index} className="mb-1">
-                <Link
-                  to={`/profile/${comment.user.username}`}
-                  className="text-decoration-none fw-bold me-2"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  {comment.user.username}
-                </Link>
-                {comment.text}
-              </div>
-            ))}
+        
+        {(showComments ? post.comments : post.comments.slice(-2)).map((comment) => (
+          <div key={comment.id} className="post-comment">
+            <Link to={`/profile/${comment.user.username}`} className="comment-username">
+              {comment.user.username}
+            </Link>
+            {comment.text}
           </div>
+        ))}
+      </div>
+
+      {/* Post Time */}
+      <div className="post-time">
+        {post.createdAt}
+      </div>
+
+      {/* Comment Input */}
+      <div className="comment-input-container">
+        <button className="action-btn">
+          <i className="bi bi-emoji-smile"></i>
+        </button>
+        <input
+          type="text"
+          className="comment-input"
+          placeholder="Add a comment..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+        {comment.trim() && (
+          <button className="comment-post-btn" onClick={handleComment}>
+            Post
+          </button>
         )}
-
-        <div className="text-muted-instagram small mb-2">
-          {formatDate(post.createdAt)}
-        </div>
-
-        {/* Comment Input */}
-        <form onSubmit={handleComment} className="d-flex align-items-center border-top pt-3">
-          <input
-            type="text"
-            className="comment-input"
-            placeholder="Add a comment..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-          {comment.trim() && (
-            <button
-              type="submit"
-              className="btn btn-link p-0 text-decoration-none fw-bold"
-              style={{ color: 'var(--primary-color)' }}
-            >
-              Post
-            </button>
-          )}
-        </form>
       </div>
     </div>
   );

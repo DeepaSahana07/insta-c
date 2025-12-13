@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import api from '../services/api';
 
 const AuthContext = createContext();
 
 const initialState = {
   user: null,
   token: localStorage.getItem('token'),
-  isAuthenticated: false,
-  loading: true,
+  isAuthenticated: !!localStorage.getItem('token'),
+  loading: false,
   error: null
 };
 
@@ -53,11 +52,6 @@ const authReducer = (state, action) => {
         ...state,
         loading: action.payload
       };
-    case 'UPDATE_USER':
-      return {
-        ...state,
-        user: { ...state.user, ...action.payload }
-      };
     default:
       return state;
   }
@@ -66,88 +60,70 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Load user on app start
-  useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const response = await api.get('/auth/me');
-          dispatch({
-            type: 'AUTH_SUCCESS',
-            payload: {
-              user: response.data.user,
-              token
-            }
-          });
-        } catch (error) {
-          dispatch({ type: 'AUTH_FAIL', payload: 'Token expired' });
-        }
-      } else {
-        dispatch({ type: 'SET_LOADING', payload: false });
-      }
-    };
-
-    loadUser();
-  }, []);
-
-  // Login user
   const login = async (email, password) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await api.post('/auth/login', { email, password });
+      
+      // Simulate successful login for demo
+      const fakeUser = {
+        id: 'demo-user',
+        username: 'sahana_8607',
+        email: email,
+        fullName: 'Deepa Sahana'
+      };
+      
+      const fakeToken = 'demo-jwt-token-' + Date.now();
       
       dispatch({
         type: 'AUTH_SUCCESS',
-        payload: response.data
+        payload: {
+          user: fakeUser,
+          token: fakeToken
+        }
       });
       
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
-      dispatch({ type: 'AUTH_FAIL', payload: message });
-      return { success: false, message };
+      dispatch({ type: 'AUTH_FAIL', payload: 'Login failed' });
+      return { success: false, message: 'Login failed' };
     }
   };
 
-  // Register user
   const register = async (formData) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-
-      const response = await api.post('/auth/register', formData);
-      // const response = await api.post('/auth/register', formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data'
-      //   }
-      // });
+      
+      // Simulate successful registration for demo
+      const fakeUser = {
+        id: 'demo-user',
+        username: formData.get('username') || 'new_user',
+        email: formData.get('email'),
+        fullName: formData.get('fullName')
+      };
+      
+      const fakeToken = 'demo-jwt-token-' + Date.now();
       
       dispatch({
         type: 'AUTH_SUCCESS',
-        payload: response.data
+        payload: {
+          user: fakeUser,
+          token: fakeToken
+        }
       });
       
       return { success: true };
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
-      dispatch({ type: 'AUTH_FAIL', payload: message });
-      return { success: false, message };
+      dispatch({ type: 'AUTH_FAIL', payload: 'Registration failed' });
+      return { success: false, message: 'Registration failed' };
     }
   };
 
-  // Logout user
   const logout = () => {
     dispatch({ type: 'LOGOUT' });
   };
 
-  // Clear error
   const clearError = () => {
     dispatch({ type: 'CLEAR_ERROR' });
-  };
-
-  // Update user
-  const updateUser = (userData) => {
-    dispatch({ type: 'UPDATE_USER', payload: userData });
   };
 
   const value = {
@@ -155,8 +131,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    clearError,
-    updateUser
+    clearError
   };
 
   return (

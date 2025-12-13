@@ -32,7 +32,7 @@ const Login = () => {
     e.preventDefault();
     const result = await login(formData.email, formData.password);
     if (result.success) {
-      setTimeout(() => navigate('/'), 100);
+      navigate('/', { replace: true });
     }
   };
 
