@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Loader from '../components/Loader';
 
 const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
-    fullName: '',
-    profilePicture: null
+    fullName: ''
   });
-  const [preview, setPreview] = useState(null);
   const { register, isAuthenticated, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
@@ -26,28 +23,10 @@ const Register = () => {
   }, []);
 
   const handleChange = (e) => {
-    if (e.target.name === 'profilePicture') {
-      const file = e.target.files[0];
-      setFormData({
-        ...formData,
-        profilePicture: file
-      });
-      
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreview(reader.result);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        setPreview(null);
-      }
-    } else {
-      setFormData({
-        ...formData,
-        [e.target.name]: e.target.value
-      });
-    }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -58,10 +37,6 @@ const Register = () => {
     submitData.append('email', formData.email);
     submitData.append('password', formData.password);
     submitData.append('fullName', formData.fullName);
-    
-    if (formData.profilePicture) {
-      submitData.append('profilePicture', formData.profilePicture);
-    }
 
     const result = await register(submitData);
     if (result.success) {
@@ -69,115 +44,125 @@ const Register = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="auth-container">
-        <Loader />
-      </div>
-    );
-  }
-
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="logo-text">Instagram</div>
+    <div className="auth-page">
+      <div className="auth-container-new">
+        <div className="auth-card-new">
+          <div className="instagram-logo-auth">Instagram</div>
+          
+          <p className="auth-subtitle">Sign up to see photos and videos from your friends.</p>
 
-        {error && (
-          <div className="alert alert-danger" role="alert">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3 text-center">
-            <div className="mb-2">
-              {preview ? (
-                <img
-                  src={preview}
-                  alt="Profile Preview"
-                  className="profile-picture-large"
-                />
-              ) : (
-                <div
-                  className="profile-picture-large d-flex align-items-center justify-content-center"
-                  style={{ backgroundColor: 'var(--bg-secondary)' }}
-                >
-                  <i className="bi bi-person-plus" style={{ fontSize: '48px' }}></i>
-                </div>
-              )}
-            </div>
-            <input
-              type="file"
-              className="form-control form-control-instagram"
-              name="profilePicture"
-              accept="image/*"
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="mb-3">
-            <input
-              type="text"
-              className="form-control form-control-instagram"
-              name="fullName"
-              placeholder="Full Name"
-              value={formData.fullName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <input
-              type="text"
-              className="form-control form-control-instagram"
-              name="username"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <input
-              type="email"
-              className="form-control form-control-instagram"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <input
-              type="password"
-              className="form-control form-control-instagram"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              minLength="6"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-instagram w-100 mb-3"
-            disabled={loading}
-          >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+          <button className="btn-facebook">
+            <i className="bi bi-facebook"></i>
+            Log in with Facebook
           </button>
-        </form>
 
-        <div className="text-center">
-          <span className="text-muted-instagram">Have an account? </span>
-          <Link to="/login" className="text-decoration-none fw-bold">
-            Log in
-          </Link>
+          <div className="auth-divider">
+            <span>OR</span>
+          </div>
+
+          {error && (
+            <div className="auth-error">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group-auth">
+              <input
+                type="email"
+                className="form-input-auth"
+                name="email"
+                placeholder="Mobile Number or Email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group-auth">
+              <input
+                type="text"
+                className="form-input-auth"
+                name="fullName"
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group-auth">
+              <input
+                type="text"
+                className="form-input-auth"
+                name="username"
+                placeholder="Username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group-auth">
+              <input
+                type="password"
+                className="form-input-auth"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                minLength="6"
+              />
+            </div>
+
+            <p className="auth-terms">
+              People who use our service may have uploaded your contact information to Instagram. 
+              <a href="#" className="auth-link">Learn More</a>
+            </p>
+
+            <p className="auth-terms">
+              By signing up, you agree to our <a href="#" className="auth-link">Terms</a>, 
+              <a href="#" className="auth-link">Privacy Policy</a> and <a href="#" className="auth-link">Cookies Policy</a>.
+            </p>
+
+            <button
+              type="submit"
+              className="btn-auth-primary"
+              disabled={loading}
+            >
+              Sign up
+            </button>
+          </form>
+        </div>
+
+        <div className="auth-card-new auth-switch">
+          <span>Have an account? </span>
+          <Link to="/login" className="auth-link">Log in</Link>
+        </div>
+
+        <div className="auth-footer">
+          <div className="footer-links-auth">
+            <a href="#">Meta</a>
+            <a href="#">About</a>
+            <a href="#">Blog</a>
+            <a href="#">Jobs</a>
+            <a href="#">Help</a>
+            <a href="#">API</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Locations</a>
+            <a href="#">Instagram Lite</a>
+            <a href="#">Meta AI</a>
+            <a href="#">Threads</a>
+          </div>
+          <div className="footer-copyright">
+            <select className="language-select">
+              <option>English</option>
+            </select>
+            <span>© 2025 Instagram from Meta</span>
+          </div>
         </div>
       </div>
     </div>
