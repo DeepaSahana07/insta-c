@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import freeApiService from '../services/freeApiService';
 
 const Post = ({ post }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likes);
+  const [likesCount, setLikesCount] = useState(post.likes || 0);
   const [comment, setComment] = useState('');
   const [showComments, setShowComments] = useState(false);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+  const handleLike = async () => {
+    try {
+      await freeApiService.likePost(post.id);
+      setIsLiked(!isLiked);
+      setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+    } catch (error) {
+      console.log('Like action failed');
+    }
   };
 
   const handleSave = () => {
@@ -31,7 +37,7 @@ const Post = ({ post }) => {
         <div className="post-user-info">
           <Link to={`/profile/${post.user.username}`}>
             <img
-              src={post.user.profilePicture}
+              src={post.user.avatar || post.user.profilePicture || '/src/assets/user1.jpg'}
               alt={post.user.username}
               className="post-avatar"
             />
@@ -90,16 +96,16 @@ const Post = ({ post }) => {
 
       {/* Post Comments */}
       <div className="post-comments">
-        {post.comments.length > 2 && (
+        {post.comments && post.comments.length > 2 && (
           <button className="view-comments" onClick={() => setShowComments(!showComments)}>
             View all {post.comments.length} comments
           </button>
         )}
         
-        {(showComments ? post.comments : post.comments.slice(-2)).map((comment) => (
+        {post.comments && (showComments ? post.comments : post.comments.slice(-2)).map((comment) => (
           <div key={comment.id} className="post-comment">
-            <Link to={`/profile/${comment.user.username}`} className="comment-username">
-              {comment.user.username}
+            <Link to={`/profile/${comment.user?.username || 'user'}`} className="comment-username">
+              {comment.user?.username || 'user'}
             </Link>
             {comment.text}
           </div>
@@ -108,7 +114,7 @@ const Post = ({ post }) => {
 
       {/* Post Time */}
       <div className="post-time">
-        {post.createdAt}
+        {post.timestamp ? new Date(post.timestamp).toLocaleDateString() : post.createdAt || '1 day ago'}
       </div>
 
       {/* Comment Input */}

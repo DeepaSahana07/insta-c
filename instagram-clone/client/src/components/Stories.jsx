@@ -1,13 +1,26 @@
-import React from 'react';
-import { fakeUsers, currentUser } from '../services/fakeData';
+import React, { useState, useEffect } from 'react';
+import { currentUser } from '../services/fakeData';
+import freeApiService from '../services/freeApiService';
 
 const Stories = () => {
-  const allUsers = [currentUser, ...fakeUsers];
+  const [users, setUsers] = useState([currentUser]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const apiUsers = await freeApiService.getUsers(8);
+        setUsers([currentUser, ...apiUsers]);
+      } catch (error) {
+        setUsers([currentUser]);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   return (
     <div className="stories-container">
       <div className="stories-scroll">
-        {allUsers.map((user, index) => (
+        {users.map((user, index) => (
           <div key={user.id} className="story-item">
             <div className="story-ring">
               <img

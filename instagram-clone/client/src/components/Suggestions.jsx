@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { currentUser, suggestedUsers } from '../services/fakeData';
+import freeApiService from '../services/freeApiService';
 
 const Suggestions = () => {
   const [followingStatus, setFollowingStatus] = useState({});
+  const [users, setUsers] = useState([]);
 
-  const handleFollow = (userId) => {
-    setFollowingStatus(prev => ({
-      ...prev,
-      [userId]: !prev[userId]
-    }));
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const apiUsers = await freeApiService.getUsers(5);
+        setUsers(apiUsers);
+      } catch (error) {
+        setUsers(suggestedUsers);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const handleFollow = async (userId) => {
+    try {
+      await freeApiService.followUser(userId);
+      setFollowingStatus(prev => ({
+        ...prev,
+        [userId]: !prev[userId]
+      }));
+    } catch (error) {
+      console.log('Follow action failed');
+    }
   };
 
   return (
@@ -38,12 +57,12 @@ const Suggestions = () => {
         <Link to="/explore/people" className="see-all-btn">See All</Link>
       </div>
 
-      {suggestedUsers.map((user) => (
+      {users.map((user) => (
         <div key={user.id} className="suggestion-item">
           <div className="suggestion-user">
             <Link to={`/profile/${user.username}`}>
               <img
-                src={user.profilePicture}
+                src={user.avatar || user.profilePicture || '/src/assets/user1.jpg'}
                 alt={user.username}
                 className="suggestion-avatar"
               />
@@ -55,7 +74,7 @@ const Suggestions = () => {
                   <i className="bi bi-patch-check-fill text-primary ms-1" style={{fontSize: '12px'}}></i>
                 )}
               </h6>
-              <p>Followed by {user.mutualFollowers[0]} + {Math.floor(Math.random() * 10)} more</p>
+              <p>Followed by {user.mutualFollowers?.[0] || 'friends'} + {Math.floor(Math.random() * 10)} more</p>
             </div>
           </div>
           <button

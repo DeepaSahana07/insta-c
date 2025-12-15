@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5001/api';
 
 const api = axios.create({
-  baseURL:  "http://localhost:5000/api",
+  baseURL: "http://localhost:5001/api",
   headers: {
     'Content-Type': 'application/json'
   }
@@ -34,5 +34,23 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Free API functions
+export const freeAPI = {
+  getDemoPosts: () => api.get('/demo/posts'),
+  getDemoUsers: () => api.get('/demo/users'),
+  likePost: (postId) => {
+    const likes = JSON.parse(localStorage.getItem('likes') || '{}');
+    likes[postId] = !likes[postId];
+    localStorage.setItem('likes', JSON.stringify(likes));
+    return Promise.resolve({ liked: likes[postId] });
+  },
+  followUser: (userId) => {
+    const follows = JSON.parse(localStorage.getItem('follows') || '{}');
+    follows[userId] = !follows[userId];
+    localStorage.setItem('follows', JSON.stringify(follows));
+    return Promise.resolve({ following: follows[userId] });
+  }
+};
 
 export default api;
