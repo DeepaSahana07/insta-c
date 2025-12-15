@@ -8,6 +8,7 @@ const Post = ({ post }) => {
   const [likesCount, setLikesCount] = useState(post.likes || 0);
   const [comment, setComment] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState(post.comments || []);
 
   const handleLike = async () => {
     try {
@@ -26,8 +27,35 @@ const Post = ({ post }) => {
   const handleComment = (e) => {
     e.preventDefault();
     if (!comment.trim()) return;
-    // Add comment logic here
+    
+    const currentUser = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+      .find(u => u.id === localStorage.getItem('currentUserId'));
+    
+    const newComment = {
+      id: Date.now(),
+      text: comment,
+      user: {
+        username: currentUser?.username || 'user',
+        avatar: currentUser?.profilePicture || '/src/assets/user1.jpg'
+      },
+      createdAt: 'now'
+    };
+    
+    const updatedComments = [...comments, newComment];
+    setComments(updatedComments);
     setComment('');
+    
+    // Save to localStorage
+    try {
+      const existingPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+      const postIndex = existingPosts.findIndex(p => p.id === post.id);
+      if (postIndex !== -1) {
+        existingPosts[postIndex].comments = updatedComments;
+        localStorage.setItem('userPosts', JSON.stringify(existingPosts));
+      }
+    } catch (error) {
+      console.log('Error saving comment:', error);
+    }
   };
 
   return (
@@ -96,13 +124,13 @@ const Post = ({ post }) => {
 
       {/* Post Comments */}
       <div className="post-comments">
-        {post.comments && post.comments.length > 2 && (
+        {comments && comments.length > 2 && (
           <button className="view-comments" onClick={() => setShowComments(!showComments)}>
-            View all {post.comments.length} comments
+            View all {comments.length} comments
           </button>
         )}
         
-        {post.comments && (showComments ? post.comments : post.comments.slice(-2)).map((comment) => (
+        {comments && (showComments ? comments : comments.slice(-2)).map((comment) => (
           <div key={comment.id} className="post-comment">
             <Link to={`/profile/${comment.user?.username || 'user'}`} className="comment-username">
               {comment.user?.username || 'user'}

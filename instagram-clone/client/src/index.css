@@ -853,6 +853,124 @@ body {
   margin-bottom: 16px;
 }
 
+/* Create Post Styles */
+.create-post-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.create-post-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 30px;
+}
+
+.create-post-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.create-post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.file-input, .caption-input, .location-input {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.file-input:focus, .caption-input:focus, .location-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.image-preview {
+  margin-top: 15px;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.caption-counter {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 5px;
+  text-align: right;
+}
+
+.user-preview {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+}
+
+.user-info .username {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-info .fullname {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.share-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.share-btn:hover {
+  background: var(--secondary-color);
+}
+
+.share-btn:disabled {
+  background: #4cb5f9;
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 @media (max-width: 875px) {
   .auth-phone-mockup {
     display: none;

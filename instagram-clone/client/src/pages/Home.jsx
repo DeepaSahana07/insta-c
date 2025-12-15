@@ -12,11 +12,19 @@ const Home = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
+        // Get user posts from localStorage
+        const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+        
+        // Get API posts
         const apiPosts = await freeApiService.getPosts(15);
-        setPosts(apiPosts);
+        
+        // Combine user posts with API posts
+        const allPosts = [...userPosts, ...apiPosts];
+        setPosts(allPosts);
       } catch (error) {
         console.log('Using fallback data');
-        setPosts(fakePosts);
+        const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+        setPosts([...userPosts, ...fakePosts]);
       } finally {
         setLoading(false);
       }
