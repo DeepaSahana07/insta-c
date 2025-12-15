@@ -45,123 +45,112 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-container-new">
-        <div className="auth-card-new">
-          <div className="instagram-logo-auth">Instagram</div>
-          
-          <p className="auth-subtitle">Sign up to see photos and videos from your friends.</p>
-
-          <button className="btn-facebook">
-            <i className="bi bi-facebook"></i>
-            Log in with Facebook
-          </button>
-
-          <div className="auth-divider">
-            <span>OR</span>
-          </div>
-
-          {error && (
-            <div className="auth-error">
-              {error}
+    <div className="auth-container">
+      <div className="auth-wrapper">
+        <div className="auth-phone-mockup">
+          <img src="/src/assets/Instagram_logo.svg.png" alt="Instagram" className="phone-image" />
+        </div>
+        
+        <div className="auth-form-container">
+          <div className="auth-form-box">
+            <div className="instagram-logo">
+              <img src="/src/assets/Instagram_text.svg" alt="Instagram" />
             </div>
-          )}
+            
+            <p className="signup-subtitle">Sign up to see photos and videos from your friends.</p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group-auth">
-              <input
-                type="email"
-                className="form-input-auth"
-                name="email"
-                placeholder="Mobile Number or Email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group-auth">
-              <input
-                type="text"
-                className="form-input-auth"
-                name="fullName"
-                placeholder="Full Name"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group-auth">
-              <input
-                type="text"
-                className="form-input-auth"
-                name="username"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group-auth">
-              <input
-                type="password"
-                className="form-input-auth"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength="6"
-              />
-            </div>
-
-            <p className="auth-terms">
-              People who use our service may have uploaded your contact information to Instagram. 
-              <a href="#" className="auth-link">Learn More</a>
-            </p>
-
-            <p className="auth-terms">
-              By signing up, you agree to our <a href="#" className="auth-link">Terms</a>, 
-              <a href="#" className="auth-link">Privacy Policy</a> and <a href="#" className="auth-link">Cookies Policy</a>.
-            </p>
-
-            <button
-              type="submit"
-              className="btn-auth-primary"
-              disabled={loading}
-            >
-              Sign up
+            <button className="facebook-login">
+              <i className="bi bi-facebook"></i>
+              Log in with Facebook
             </button>
-          </form>
-        </div>
 
-        <div className="auth-card-new auth-switch">
-          <span>Have an account? </span>
-          <Link to="/login" className="auth-link">Log in</Link>
-        </div>
+            <div className="auth-divider">
+              <div className="divider-line"></div>
+              <span className="divider-text">OR</span>
+              <div className="divider-line"></div>
+            </div>
 
-        <div className="auth-footer">
-          <div className="footer-links-auth">
-            <a href="#">Meta</a>
-            <a href="#">About</a>
-            <a href="#">Blog</a>
-            <a href="#">Jobs</a>
-            <a href="#">Help</a>
-            <a href="#">API</a>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Locations</a>
-            <a href="#">Instagram Lite</a>
-            <a href="#">Meta AI</a>
-            <a href="#">Threads</a>
+            {error && (
+              <div className="auth-error">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="input-group">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Mobile Number or Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="auth-input"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="fullName"
+                  placeholder="Full Name"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  className="auth-input"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="username"
+                  placeholder="Username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="auth-input"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="auth-input"
+                  required
+                  minLength="6"
+                />
+              </div>
+
+              <p className="terms-text">
+                By signing up, you agree to our <a href="#" className="terms-link">Terms</a>, 
+                <a href="#" className="terms-link">Privacy Policy</a> and <a href="#" className="terms-link">Cookies Policy</a>.
+              </p>
+
+              <button
+                type="submit"
+                className="auth-btn-primary"
+                disabled={loading}
+              >
+                {loading ? 'Signing up...' : 'Sign up'}
+              </button>
+            </form>
           </div>
-          <div className="footer-copyright">
-            <select className="language-select">
-              <option>English</option>
-            </select>
-            <span>© 2025 Instagram from Meta</span>
+
+          <div className="auth-signup-box">
+            <p>Have an account? <Link to="/login" className="signup-link">Log in</Link></p>
+          </div>
+
+          <div className="app-download">
+            <p>Get the app.</p>
+            <div className="download-buttons">
+              <img src="https://static.cdninstagram.com/rsrc.php/v3/yz/r/c5Rp7Ym-Klz.png" alt="Download on App Store" />
+              <img src="https://static.cdninstagram.com/rsrc.php/v3/yu/r/EHY6QnZYdNX.png" alt="Get it on Google Play" />
+            </div>
           </div>
         </div>
       </div>
