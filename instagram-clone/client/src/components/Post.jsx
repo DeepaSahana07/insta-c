@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import freeApiService from '../services/freeApiService';
+import { useAuth } from '../context/AuthContext';
 
 const Post = ({ post }) => {
+  const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes || 0);
@@ -26,17 +28,14 @@ const Post = ({ post }) => {
 
   const handleComment = (e) => {
     e.preventDefault();
-    if (!comment.trim()) return;
-    
-    const currentUser = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-      .find(u => u.id === localStorage.getItem('currentUserId'));
+    if (!comment.trim() || !user) return;
     
     const newComment = {
       id: Date.now(),
       text: comment,
       user: {
-        username: currentUser?.username || 'user',
-        avatar: currentUser?.profilePicture || '/src/assets/user1.jpg'
+        username: user.username,
+        avatar: user.profilePicture || '/src/assets/user1.jpg'
       },
       createdAt: 'now'
     };

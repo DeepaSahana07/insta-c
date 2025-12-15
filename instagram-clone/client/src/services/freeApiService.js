@@ -9,9 +9,13 @@ class FreeAPIService {
   }
 
   // Get posts from JSONPlaceholder
-  async getPosts(limit = 10) {
+  async getPosts(limit = 15) {
     try {
-      const response = await axios.get(`${this.jsonPlaceholder}/posts?_limit=${limit}`);
+      const response = await axios.get(`${this.jsonPlaceholder}/posts?_limit=${limit}`, {
+        timeout: 10000,
+        retry: 3,
+        retryDelay: 1000
+      });
       const posts = response.data;
       
       // Enhance posts with images and user data
@@ -23,7 +27,7 @@ class FreeAPIService {
           id: post.id,
           caption: post.title,
           content: post.body,
-          image: `${this.picsum}/600/600?random=${post.id}`,
+          image: `${this.picsum}/600/600?random=${post.id + index * 100}`,
           user: {
             id: post.userId,
             username: user.login.username,
@@ -31,7 +35,7 @@ class FreeAPIService {
             avatar: user.picture.medium
           },
           likes: Math.floor(Math.random() * 1000) + 10,
-          comments: Math.floor(Math.random() * 50) + 1,
+          comments: [],
           timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
           liked: Math.random() > 0.7,
           createdAt: `${Math.floor(Math.random() * 24)}h`
@@ -40,7 +44,26 @@ class FreeAPIService {
       
       return enhancedPosts;
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Error fetching posts:', error.code || error.message);
+      if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT') {
+        // Try alternative endpoint
+        try {
+          const fallbackResponse = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10', {
+            timeout: 5000
+          });
+          return fallbackResponse.data.map(post => ({
+            id: post.id,
+            caption: post.title,
+            image: `https://picsum.photos/600/600?random=${post.id}`,
+            user: { username: `user${post.userId}`, avatar: `https://i.pravatar.cc/150?img=${post.userId}` },
+            likes: Math.floor(Math.random() * 100),
+            comments: [],
+            createdAt: '1h'
+          }));
+        } catch (fallbackError) {
+          return this.getFallbackPosts();
+        }
+      }
       return this.getFallbackPosts();
     }
   }

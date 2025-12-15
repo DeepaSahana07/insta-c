@@ -9,6 +9,8 @@ const Register = () => {
     password: '',
     fullName: ''
   });
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [preview, setPreview] = useState(null);
   const { register, isAuthenticated, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
@@ -20,13 +22,28 @@ const Register = () => {
 
   useEffect(() => {
     clearError();
-  }, [clearError]);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setProfilePicture(file);
+    
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreview(null);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -37,6 +54,9 @@ const Register = () => {
     submitData.append('email', formData.email);
     submitData.append('password', formData.password);
     submitData.append('fullName', formData.fullName);
+    if (profilePicture) {
+      submitData.append('profilePicture', profilePicture);
+    }
 
     const result = await register(submitData);
     if (result.success) {
@@ -96,6 +116,23 @@ const Register = () => {
             required
             minLength="6"
           />
+
+          <div className="file-upload-container">
+            <label className="file-upload-label">
+              Choose Profile Picture (optional)
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="file-input-hidden"
+              />
+            </label>
+            {preview && (
+              <div className="preview-container">
+                <img src={preview} alt="Preview" className="preview-image" />
+              </div>
+            )}
+          </div>
 
           <button
             type="submit"

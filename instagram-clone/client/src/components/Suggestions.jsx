@@ -5,9 +5,11 @@ import freeApiService from '../services/freeApiService';
 import { useAuth } from '../context/AuthContext';
 
 const Suggestions = () => {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [followingStatus, setFollowingStatus] = useState({});
   const [users, setUsers] = useState([]);
+  const [showSwitchModal, setShowSwitchModal] = useState(false);
+  const [registeredUsers, setRegisteredUsers] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -18,8 +20,15 @@ const Suggestions = () => {
         setUsers(suggestedUsers);
       }
     };
+    
+    const loadRegisteredUsers = () => {
+      const allUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      setRegisteredUsers(allUsers.filter(u => u._id !== user?._id));
+    };
+    
     fetchUsers();
-  }, []);
+    loadRegisteredUsers();
+  }, [user]);
 
   const handleFollow = async (userId) => {
     try {
@@ -49,7 +58,11 @@ const Suggestions = () => {
             <h6>{user.username}</h6>
             <p>{user.fullName}</p>
           </div>
-          <button className="btn btn-link p-0 text-decoration-none fw-bold" style={{color: 'var(--primary-color)', fontSize: '12px'}}>
+          <button 
+            className="btn btn-link p-0 text-decoration-none fw-bold" 
+            style={{color: 'var(--primary-color)', fontSize: '12px'}}
+            onClick={() => setShowSwitchModal(true)}
+          >
             Switch
           </button>
         </div>
@@ -98,6 +111,42 @@ const Suggestions = () => {
       <div className="footer-copyright">
         © 2025 INSTAGRAM FROM META
       </div>
+      
+      {/* Switch Account Modal */}
+      {showSwitchModal && (
+        <div className="modal-overlay" onClick={() => setShowSwitchModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h3>Switch Account</h3>
+            <div className="switch-options">
+              <button 
+                className="switch-option"
+                onClick={() => window.location.href = '/register'}
+              >
+                Add New Account
+              </button>
+              
+              {registeredUsers.map(regUser => (
+                <button 
+                  key={regUser._id}
+                  className="switch-option user-option"
+                  onClick={async () => {
+                    await login(regUser.email, regUser.password);
+                    setShowSwitchModal(false);
+                    window.location.reload();
+                  }}
+                >
+                  <img src={regUser.profilePicture} alt={regUser.username} className="switch-avatar" />
+                  <div>
+                    <div className="switch-username">{regUser.username}</div>
+                    <div className="switch-fullname">{regUser.fullName}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <button className="close-modal" onClick={() => setShowSwitchModal(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

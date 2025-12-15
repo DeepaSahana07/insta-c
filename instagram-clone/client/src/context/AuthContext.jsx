@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext();
 
@@ -130,13 +130,26 @@ export const AuthProvider = ({ children }) => {
         return { success: false };
       }
       
+      let profilePictureUrl = `https://i.pravatar.cc/150?u=${username}`;
+      
+      // Handle file upload
+      const profilePictureFile = formData.get('profilePicture');
+      if (profilePictureFile && profilePictureFile.size > 0) {
+        // Convert file to base64 for localStorage
+        const reader = new FileReader();
+        profilePictureUrl = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(profilePictureFile);
+        });
+      }
+      
       const newUser = {
         _id: 'user-' + Date.now(),
         username: username,
         email: email,
         fullName: formData.get('fullName'),
         password: formData.get('password'),
-        profilePicture: '/src/assets/user1.jpg'
+        profilePicture: profilePictureUrl
       };
       
       existingUsers.push(newUser);
@@ -165,9 +178,9 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGOUT' });
   };
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
-  };
+  }, []);
 
   const value = {
     ...state,
