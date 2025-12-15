@@ -80,7 +80,7 @@ const CreatePost = () => {
       existingPosts.unshift(newPost);
       localStorage.setItem('userPosts', JSON.stringify(existingPosts));
 
-      navigate('/');
+      navigate('/home');
     } catch (error) {
       setError('Error creating post: ' + error.message);
     } finally {

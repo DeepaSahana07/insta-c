@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -13,26 +13,15 @@ import Search from './pages/Search';
 import CreatePost from './pages/CreatePost';
 import Loader from './components/Loader';
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
+// Root redirect component
+const RootRedirect = () => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return <Loader />;
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
-};
-
-// Public Route Component (redirect if authenticated)
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return <Loader />;
-  }
-
-  return !isAuthenticated ? children : <Navigate to="/" replace />;
+  return isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />;
 };
 
 // Layout Component
@@ -52,27 +41,16 @@ function App() {
         <Router>
           <div className="App">
             <Routes>
+              {/* Root route - redirect based on auth */}
+              <Route path="/" element={<RootRedirect />} />
+
               {/* Public Routes */}
-              <Route
-                path="/login"
-                element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/register"
-                element={
-                  <PublicRoute>
-                    <Register />
-                  </PublicRoute>
-                }
-              />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
               {/* Protected Routes */}
               <Route
-                path="/"
+                path="/home"
                 element={
                   <ProtectedRoute>
                     <Layout>

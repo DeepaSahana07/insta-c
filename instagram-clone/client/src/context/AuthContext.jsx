@@ -13,7 +13,6 @@ const initialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'AUTH_SUCCESS':
-      localStorage.setItem('token', action.payload.token);
       return {
         ...state,
         user: action.payload.user,
@@ -23,7 +22,6 @@ const authReducer = (state, action) => {
         error: null
       };
     case 'AUTH_FAIL':
-      localStorage.removeItem('token');
       return {
         ...state,
         user: null,
@@ -33,7 +31,6 @@ const authReducer = (state, action) => {
         error: action.payload
       };
     case 'LOGOUT':
-      localStorage.removeItem('token');
       return {
         ...state,
         user: null,
@@ -62,19 +59,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-      const currentUserId = localStorage.getItem('currentUserId');
-      const user = registeredUsers.find(u => u.id === currentUserId);
-      
-      if (user) {
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData);
         dispatch({
           type: 'AUTH_SUCCESS',
           payload: { user, token }
         });
-      } else {
+      } catch (error) {
         localStorage.removeItem('token');
-        localStorage.removeItem('currentUserId');
+        localStorage.removeItem('user');
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     } else {
@@ -86,36 +82,33 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      // Check if user exists in localStorage
       const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
       const user = existingUsers.find(u => u.email === email);
       
       if (!user) {
-        dispatch({ type: 'AUTH_FAIL', payload: 'No account found with this email. Please sign up first.' });
-        return { success: false, message: 'No account found' };
+        dispatch({ type: 'AUTH_FAIL', payload: 'No account found with this email.' });
+        return { success: false };
       }
       
       if (user.password !== password) {
-        dispatch({ type: 'AUTH_FAIL', payload: 'Incorrect password. Please try again.' });
-        return { success: false, message: 'Incorrect password' };
+        dispatch({ type: 'AUTH_FAIL', payload: 'Incorrect password.' });
+        return { success: false };
       }
       
-      const fakeToken = 'demo-jwt-token-' + Date.now();
+      const token = 'jwt-token-' + Date.now();
       
-      localStorage.setItem('currentUserId', user.id);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       
       dispatch({
         type: 'AUTH_SUCCESS',
-        payload: {
-          user: user,
-          token: fakeToken
-        }
+        payload: { user, token }
       });
       
       return { success: true };
     } catch (error) {
       dispatch({ type: 'AUTH_FAIL', payload: 'Login failed' });
-      return { success: false, message: 'Login failed' };
+      return { success: false };
     }
   };
 
@@ -126,20 +119,19 @@ export const AuthProvider = ({ children }) => {
       const email = formData.get('email');
       const username = formData.get('username');
       
-      // Check if user already exists
       const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
       const userExists = existingUsers.find(u => u.email === email || u.username === username);
       
       if (userExists) {
         const message = userExists.email === email ? 
-          'Account already exists with this email. Please log in instead.' :
-          'Username already taken. Please choose a different username.';
+          'Account already exists with this email.' :
+          'Username already taken.';
         dispatch({ type: 'AUTH_FAIL', payload: message });
-        return { success: false, message: 'Account already exists' };
+        return { success: false };
       }
       
       const newUser = {
-        id: 'user-' + Date.now(),
+        _id: 'user-' + Date.now(),
         username: username,
         email: email,
         fullName: formData.get('fullName'),
@@ -147,30 +139,29 @@ export const AuthProvider = ({ children }) => {
         profilePicture: '/src/assets/user1.jpg'
       };
       
-      // Save user to localStorage
       existingUsers.push(newUser);
       localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
-      localStorage.setItem('currentUserId', newUser.id);
       
-      const fakeToken = 'demo-jwt-token-' + Date.now();
+      const token = 'jwt-token-' + Date.now();
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(newUser));
       
       dispatch({
         type: 'AUTH_SUCCESS',
-        payload: {
-          user: newUser,
-          token: fakeToken
-        }
+        payload: { user: newUser, token }
       });
       
       return { success: true };
     } catch (error) {
       dispatch({ type: 'AUTH_FAIL', payload: 'Registration failed' });
-      return { success: false, message: 'Registration failed' };
+      return { success: false };
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('currentUserId');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     dispatch({ type: 'LOGOUT' });
   };
 

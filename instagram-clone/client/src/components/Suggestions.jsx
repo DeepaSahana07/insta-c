@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { currentUser, suggestedUsers } from '../services/fakeData';
+import { suggestedUsers } from '../services/fakeData';
 import freeApiService from '../services/freeApiService';
+import { useAuth } from '../context/AuthContext';
 
 const Suggestions = () => {
+  const { user } = useAuth();
   const [followingStatus, setFollowingStatus] = useState({});
   const [users, setUsers] = useState([]);
 
@@ -34,22 +36,24 @@ const Suggestions = () => {
   return (
     <div className="suggestions-container">
       {/* Current User Info */}
-      <div className="user-info-card">
-        <Link to={`/profile/${currentUser.username}`}>
-          <img
-            src={currentUser.profilePicture}
-            alt={currentUser.username}
-            className="user-info-avatar"
-          />
-        </Link>
-        <div className="user-info-details flex-grow-1">
-          <h6>{currentUser.username}</h6>
-          <p>{currentUser.fullName}</p>
+      {user && (
+        <div className="user-info-card">
+          <Link to={`/profile/${user.username}`}>
+            <img
+              src={user.profilePicture || '/src/assets/user1.jpg'}
+              alt={user.username}
+              className="user-info-avatar"
+            />
+          </Link>
+          <div className="user-info-details flex-grow-1">
+            <h6>{user.username}</h6>
+            <p>{user.fullName}</p>
+          </div>
+          <button className="btn btn-link p-0 text-decoration-none fw-bold" style={{color: 'var(--primary-color)', fontSize: '12px'}}>
+            Switch
+          </button>
         </div>
-        <button className="btn btn-link p-0 text-decoration-none fw-bold" style={{color: 'var(--primary-color)', fontSize: '12px'}}>
-          Switch
-        </button>
-      </div>
+      )}
 
       {/* Suggestions */}
       <div className="suggestions-header">

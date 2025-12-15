@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { currentUser } from '../services/fakeData';
 import freeApiService from '../services/freeApiService';
+import { useAuth } from '../context/AuthContext';
 
 const Stories = () => {
-  const [users, setUsers] = useState([currentUser]);
+  const { user } = useAuth();
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const apiUsers = await freeApiService.getUsers(8);
-        setUsers([currentUser, ...apiUsers]);
+        const allUsers = user ? [user, ...apiUsers] : apiUsers;
+        setUsers(allUsers);
       } catch (error) {
-        setUsers([currentUser]);
+        setUsers(user ? [user] : []);
       }
     };
     fetchUsers();
-  }, []);
+  }, [user]);
 
   return (
     <div className="stories-container">
@@ -24,7 +26,7 @@ const Stories = () => {
           <div key={user.id} className="story-item">
             <div className="story-ring">
               <img
-                src={user.profilePicture}
+                src={user.profilePicture || user.avatar || '/src/assets/user1.jpg'}
                 alt={user.username}
                 className="story-avatar"
               />
