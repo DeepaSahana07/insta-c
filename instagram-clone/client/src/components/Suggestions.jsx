@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { suggestedUsers } from '../services/fakeData';
 import freeApiService from '../services/freeApiService';
 import { useAuth } from '../context/AuthContext';
+import SwitchAccountModal from './SwitchAccountModal';
 
 const Suggestions = () => {
   const { user, login } = useAuth();
@@ -112,41 +113,10 @@ const Suggestions = () => {
         © 2025 INSTAGRAM FROM META
       </div>
       
-      {/* Switch Account Modal */}
-      {showSwitchModal && (
-        <div className="modal-overlay" onClick={() => setShowSwitchModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3>Switch Account</h3>
-            <div className="switch-options">
-              <button 
-                className="switch-option"
-                onClick={() => window.location.href = '/register'}
-              >
-                Add New Account
-              </button>
-              
-              {registeredUsers.map(regUser => (
-                <button 
-                  key={regUser._id}
-                  className="switch-option user-option"
-                  onClick={async () => {
-                    await login(regUser.email, regUser.password);
-                    setShowSwitchModal(false);
-                    window.location.reload();
-                  }}
-                >
-                  <img src={regUser.profilePicture} alt={regUser.username} className="switch-avatar" />
-                  <div>
-                    <div className="switch-username">{regUser.username}</div>
-                    <div className="switch-fullname">{regUser.fullName}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-            <button className="close-modal" onClick={() => setShowSwitchModal(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
+      <SwitchAccountModal 
+        isOpen={showSwitchModal} 
+        onClose={() => setShowSwitchModal(false)} 
+      />
     </div>
   );
 };

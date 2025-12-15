@@ -1,51 +1,90 @@
-import React, { useState } from 'react';
-import { fakeUsers, fakePosts } from '../services/fakeData';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Search = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('top');
+  const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
 
-  const filteredUsers = fakeUsers.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    // Load all registered users except current user
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    setAllUsers(registeredUsers.filter(u => u._id !== user?._id));
+  }, [user]);
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const filtered = allUsers.filter(u => 
+        u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setSearchResults(filtered);
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchQuery, allUsers]);
 
   return (
     <div className="main-content">
-      <div className="feed-container">
-        <div className="search-container p-4">
-          <div className="search-input-container mb-4">
+      <div className="search-container">
+        <div className="search-header">
+          <div className="search-input-container">
+            <i className="bi bi-search search-icon"></i>
             <input
               type="text"
-              className="form-control form-control-instagram"
               placeholder="Search"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
             />
+            {searchQuery && (
+              <button 
+                className="clear-search"
+                onClick={() => setSearchQuery('')}
+              >
+                <i className="bi bi-x-circle-fill"></i>
+              </button>
+            )}
           </div>
+        </div>
 
-          {searchTerm ? (
-            <div className="search-results">
-              <h6 className="mb-3">Users</h6>
-              {filteredUsers.map(user => (
-                <div key={user.id} className="d-flex align-items-center mb-3">
-                  <img
-                    src={user.profilePicture}
-                    alt={user.username}
-                    className="rounded-circle me-3"
-                    style={{width: '44px', height: '44px'}}
-                  />
-                  <div>
-                    <div className="fw-bold">{user.username}</div>
-                    <div className="text-muted small">{user.fullName}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="search-results">
+          {searchQuery.trim() ? (
+            searchResults.length > 0 ? (
+              <div className="search-results-list">
+                <h6 className="search-results-title">Users</h6>
+                {searchResults.map(searchUser => (
+                  <Link 
+                    key={searchUser._id}
+                    to={`/profile/${searchUser.username}`}
+                    className="search-result-item"
+                  >
+                    <img
+                      src={searchUser.profilePicture}
+                      alt={searchUser.username}
+                      className="search-result-avatar"
+                      onError={(e) => {
+                        e.target.src = `https://i.pravatar.cc/150?u=${searchUser.username}`;
+                      }}
+                    />
+                    <div className="search-result-info">
+                      <div className="search-result-username">{searchUser.username}</div>
+                      <div className="search-result-fullname">{searchUser.fullName}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="no-results">
+                <p>No users found for "{searchQuery}"</p>
+              </div>
+            )
           ) : (
-            <div className="text-center py-5">
-              <i className="bi bi-search" style={{fontSize: '64px', color: 'var(--text-secondary)'}}></i>
-              <h5 className="mt-3">Search for users and content</h5>
+            <div className="search-suggestions">
+              <h6>Recent searches</h6>
+              <p className="search-placeholder">Try searching for people, hashtags, or places</p>
             </div>
           )}
         </div>
