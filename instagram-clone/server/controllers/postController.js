@@ -1,40 +1,26 @@
 import Post from '../models/Post.js';
 import User from '../models/User.js';
-import cloudinary from '../config/cloudinary.js';
 
 export const createPost = async (req, res) => {
   try {
-    const { caption, location } = req.body;
+    const { caption, location, imageUrl } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ message: 'Image is required' });
+    if (!imageUrl) {
+      return res.status(400).json({ message: 'Image URL is required' });
     }
 
-    // Upload image to Cloudinary
-    const uploadPromise = new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: 'instagram-clone/posts' },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      stream.end(req.file.buffer);
-    });
-
-    const uploadResult = await uploadPromise;
-
-    // Create post
+    // Create post with image URL
     const post = await Post.create({
       user: req.user.id,
-      image: uploadResult.secure_url,
+      image: imageUrl,
       caption: caption || '',
       location: location || ''
     });
 
-    // Add post to user's posts array
+    // Add post to user's posts array and increment count
     await User.findByIdAndUpdate(req.user.id, {
-      $push: { posts: post._id }
+      $push: { posts: post._id },
+      $inc: { postsCount: 1 }
     });
 
     const populatedPost = await Post.findById(post._id)
@@ -153,13 +139,15 @@ export const deletePost = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
+    // Verify ownership
     if (post.user.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this post' });
     }
 
-    // Remove post from user's posts array
+    // Remove post from user's posts array and decrement count
     await User.findByIdAndUpdate(req.user.id, {
-      $pull: { posts: post._id }
+      $pull: { posts: post._id },
+      $inc: { postsCount: -1 }
     });
 
     await Post.findByIdAndDelete(req.params.postId);

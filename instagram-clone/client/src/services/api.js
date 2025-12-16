@@ -35,22 +35,35 @@ api.interceptors.response.use(
   }
 );
 
-// Free API functions
+// API functions
+export const apiService = {
+  // Posts
+  createPost: (postData) => api.post('/posts', postData),
+  getPosts: () => api.get('/posts/feed'),
+  getExplorePosts: () => api.get('/posts/explore'),
+  likePost: (postId) => api.post(`/posts/${postId}/like`),
+  deletePost: (postId) => api.delete(`/posts/${postId}`),
+  commentOnPost: (postId, text) => api.post(`/posts/${postId}/comment`, { text }),
+  
+  // Users
+  followUser: (userId) => api.post(`/users/follow/${userId}`),
+  getUserProfile: (username) => api.get(`/users/profile/${username}`),
+  getSuggestedUsers: () => api.get('/users/suggested'),
+  searchUsers: (query = '') => api.get(`/users/search?query=${query}`),
+  deleteAccount: () => api.delete('/users/account'),
+  updateProfile: (profileData) => api.put('/users/profile', profileData),
+  
+  // Demo data
+  getDemoPosts: () => api.get('/demo/posts'),
+  getDemoUsers: () => api.get('/demo/users')
+};
+
+// Legacy free API functions for backward compatibility
 export const freeAPI = {
   getDemoPosts: () => api.get('/demo/posts'),
   getDemoUsers: () => api.get('/demo/users'),
-  likePost: (postId) => {
-    const likes = JSON.parse(localStorage.getItem('likes') || '{}');
-    likes[postId] = !likes[postId];
-    localStorage.setItem('likes', JSON.stringify(likes));
-    return Promise.resolve({ liked: likes[postId] });
-  },
-  followUser: (userId) => {
-    const follows = JSON.parse(localStorage.getItem('follows') || '{}');
-    follows[userId] = !follows[userId];
-    localStorage.setItem('follows', JSON.stringify(follows));
-    return Promise.resolve({ following: follows[userId] });
-  }
+  likePost: (postId) => apiService.likePost(postId),
+  followUser: (userId) => apiService.followUser(userId)
 };
 
 export default api;

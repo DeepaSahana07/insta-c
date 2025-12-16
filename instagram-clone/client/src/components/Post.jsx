@@ -1,24 +1,42 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import freeApiService from '../services/freeApiService';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../services/api';
 
 const Post = ({ post }) => {
   const { user } = useAuth();
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(() => {
+    return Array.isArray(post.likes) ? post.likes.includes(user?.id) : false;
+  });
   const [isSaved, setIsSaved] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likes || 0);
+  const [likesCount, setLikesCount] = useState(Array.isArray(post.likes) ? post.likes.length : (post.likes || 0));
   const [comment, setComment] = useState('');
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState(post.comments || []);
+  const [comments, setComments] = useState(Array.isArray(post.comments) ? post.comments : []);
 
   const handleLike = async () => {
     try {
-      await freeApiService.likePost(post.id);
-      setIsLiked(!isLiked);
-      setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+      // For demo posts, handle locally
+      if (post.id && typeof post.id === 'string' && (post.id.startsWith('demo-') || post.id.startsWith('extra-') || post.id.startsWith('explore-'))) {
+        const newIsLiked = !isLiked;
+        const newCount = newIsLiked ? likesCount + 1 : Math.max(0, likesCount - 1);
+        setIsLiked(newIsLiked);
+        setLikesCount(newCount);
+        return;
+      }
+      
+      // For real posts, use API
+      const response = await apiService.likePost(post._id || post.id);
+      
+      if (response.data.success) {
+        setIsLiked(response.data.isLiked);
+        setLikesCount(response.data.likesCount);
+      }
     } catch (error) {
-      console.log('Like action failed');
+      // Fallback to local handling if API fails
+      const newIsLiked = !isLiked;
+      const newCount = newIsLiked ? likesCount + 1 : Math.max(0, likesCount - 1);
+      setIsLiked(newIsLiked);
+      setLikesCount(newCount);
     }
   };
 
@@ -26,34 +44,62 @@ const Post = ({ post }) => {
     setIsSaved(!isSaved);
   };
 
-  const handleComment = (e) => {
+  const handleComment = async (e) => {
     e.preventDefault();
     if (!comment.trim() || !user) return;
     
-    const newComment = {
-      id: Date.now(),
-      text: comment,
-      user: {
-        username: user.username,
-        avatar: user.profilePicture || '/src/assets/user1.jpg'
-      },
-      createdAt: 'now'
-    };
-    
-    const updatedComments = [...comments, newComment];
-    setComments(updatedComments);
-    setComment('');
-    
-    // Save to localStorage
     try {
-      const existingPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
-      const postIndex = existingPosts.findIndex(p => p.id === post.id);
-      if (postIndex !== -1) {
-        existingPosts[postIndex].comments = updatedComments;
-        localStorage.setItem('userPosts', JSON.stringify(existingPosts));
+      // For demo posts, handle locally
+      if (post.id && typeof post.id === 'string' && (post.id.startsWith('demo-') || post.id.startsWith('extra-') || post.id.startsWith('explore-'))) {
+        const newComment = {
+          id: Date.now(),
+          text: comment,
+          user: {
+            username: user.username,
+            profilePicture: user.profilePicture
+          },
+          createdAt: 'now'
+        };
+        setComments([...comments, newComment]);
+        setComment('');
+        return;
+      }
+      
+      // For real posts, use API
+      const response = await apiService.commentOnPost(post._id || post.id, comment);
+      
+      if (response.data.success) {
+        setComments([...comments, response.data.comment]);
+        setComment('');
       }
     } catch (error) {
-      console.log('Error saving comment:', error);
+      // Fallback to local handling if API fails
+      const newComment = {
+        id: Date.now(),
+        text: comment,
+        user: {
+          username: user.username,
+          profilePicture: user.profilePicture
+        },
+        createdAt: 'now'
+      };
+      setComments([...comments, newComment]);
+      setComment('');
+    }
+  };
+  
+  const handleDeletePost = async () => {
+    if (!window.confirm('Are you sure you want to delete this post?')) return;
+    
+    try {
+      const response = await apiService.deletePost(post._id || post.id);
+      
+      if (response.data.success) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.log('Delete post failed:', error);
+      alert('Failed to delete post. You can only delete your own posts.');
     }
   };
 
@@ -62,25 +108,29 @@ const Post = ({ post }) => {
       {/* Post Header */}
       <div className="post-header">
         <div className="post-user-info">
-          <Link to={`/profile/${post.user.username}`}>
-            <img
-              src={post.user.avatar || post.user.profilePicture || '/src/assets/user1.jpg'}
-              alt={post.user.username}
-              className="post-avatar"
-            />
-          </Link>
+          <img
+            src={post.user.avatar || post.user.profilePicture || '/src/assets/user1.jpg'}
+            alt={post.user.username}
+            className="post-avatar"
+          />
           <div>
-            <Link to={`/profile/${post.user.username}`} className="post-username">
+            <span className="post-username text-gray-900 dark:text-white">
               {post.user.username}
-            </Link>
+            </span>
             {post.location && (
-              <div className="post-location">{post.location}</div>
+              <div className="post-location text-gray-600 dark:text-gray-300">{post.location}</div>
             )}
           </div>
         </div>
-        <button className="post-options">
-          <i className="bi bi-three-dots"></i>
-        </button>
+        {(post.user._id === user?.id || post.user.id === user?.id) && (
+          <button 
+            className="post-options"
+            onClick={() => handleDeletePost()}
+            style={{ color: '#ed4956' }}
+          >
+            <i className="bi bi-trash"></i>
+          </button>
+        )}
       </div>
 
       {/* Post Image */}
@@ -90,7 +140,7 @@ const Post = ({ post }) => {
       <div className="post-actions">
         <div className="post-actions-left">
           <button className={`action-btn ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
-            <i className={`bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}`}></i>
+            <i className={`bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}`} style={{ color: isLiked ? '#ed4956' : 'inherit' }}></i>
           </button>
           <button className="action-btn">
             <i className="bi bi-chat"></i>
@@ -106,41 +156,41 @@ const Post = ({ post }) => {
 
       {/* Post Likes */}
       {likesCount > 0 && (
-        <div className="post-likes">
+        <div className="post-likes text-gray-900 dark:text-white">
           {likesCount.toLocaleString()} likes
         </div>
       )}
 
       {/* Post Caption */}
       {post.caption && (
-        <div className="post-caption">
-          <Link to={`/profile/${post.user.username}`} className="post-caption-username">
+        <div className="post-caption text-gray-900 dark:text-white">
+          <span className="post-caption-username font-semibold">
             {post.user.username}
-          </Link>
-          {post.caption}
+          </span>
+          {' '}{post.caption}
         </div>
       )}
 
       {/* Post Comments */}
       <div className="post-comments">
         {comments && comments.length > 2 && (
-          <button className="view-comments" onClick={() => setShowComments(!showComments)}>
+          <button className="view-comments text-gray-600 dark:text-gray-300" onClick={() => setShowComments(!showComments)}>
             View all {comments.length} comments
           </button>
         )}
         
-        {comments && (showComments ? comments : comments.slice(-2)).map((comment) => (
-          <div key={comment.id} className="post-comment">
-            <Link to={`/profile/${comment.user?.username || 'user'}`} className="comment-username">
+        {Array.isArray(comments) && (showComments ? comments : comments.slice(-2)).map((comment) => (
+          <div key={comment.id} className="post-comment text-gray-900 dark:text-white">
+            <span className="comment-username font-semibold">
               {comment.user?.username || 'user'}
-            </Link>
-            {comment.text}
+            </span>
+            {' '}{comment.text}
           </div>
         ))}
       </div>
 
       {/* Post Time */}
-      <div className="post-time">
+      <div className="post-time text-gray-500 dark:text-gray-400">
         {post.timestamp ? new Date(post.timestamp).toLocaleDateString() : post.createdAt || '1 day ago'}
       </div>
 
@@ -157,7 +207,7 @@ const Post = ({ post }) => {
           onChange={(e) => setComment(e.target.value)}
         />
         {comment.trim() && (
-          <button className="comment-post-btn" onClick={handleComment}>
+          <button className="comment-post-btn text-blue-500 dark:text-blue-400" onClick={handleComment}>
             Post
           </button>
         )}

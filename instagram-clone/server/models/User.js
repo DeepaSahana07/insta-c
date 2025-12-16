@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 6
+    minlength: 6,
+    select: false
   },
   fullName: {
     type: String,
@@ -28,7 +29,7 @@ const userSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String,
-    default: 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg'
+    default: 'https://i.pravatar.cc/150?img=1'
   },
   bio: {
     type: String,
@@ -47,6 +48,18 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Post'
   }],
+  postsCount: {
+    type: Number,
+    default: 0
+  },
+  followersCount: {
+    type: Number,
+    default: 0
+  },
+  followingCount: {
+    type: Number,
+    default: 0
+  },
   isPrivate: {
     type: Boolean,
     default: false

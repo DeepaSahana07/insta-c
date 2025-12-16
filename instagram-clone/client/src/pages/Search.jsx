@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../services/api';
 
 const Search = () => {
   const { user } = useAuth();
@@ -9,22 +10,24 @@ const Search = () => {
   const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
-    // Load all registered users except current user
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    setAllUsers(registeredUsers.filter(u => u._id !== user?._id));
-  }, [user]);
+    const searchUsers = async () => {
+      if (searchQuery.trim()) {
+        try {
+          const response = await apiService.searchUsers(searchQuery);
+          const filteredUsers = response.data.users.filter(u => u._id !== user?.id);
+          setSearchResults(filteredUsers);
+        } catch (error) {
+          console.error('Search error:', error);
+          setSearchResults([]);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    };
 
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const filtered = allUsers.filter(u => 
-        u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setSearchResults(filtered);
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchQuery, allUsers]);
+    const debounceTimer = setTimeout(searchUsers, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, user]);
 
   return (
     <div className="main-content">
@@ -54,7 +57,7 @@ const Search = () => {
           {searchQuery.trim() ? (
             searchResults.length > 0 ? (
               <div className="search-results-list">
-                <h6 className="search-results-title">Users</h6>
+                <h6 className="search-results-title text-gray-900 dark:text-white">Users</h6>
                 {searchResults.map(searchUser => (
                   <Link 
                     key={searchUser._id}
@@ -70,21 +73,21 @@ const Search = () => {
                       }}
                     />
                     <div className="search-result-info">
-                      <div className="search-result-username">{searchUser.username}</div>
-                      <div className="search-result-fullname">{searchUser.fullName}</div>
+                      <div className="search-result-username text-gray-900 dark:text-white">{searchUser.username}</div>
+                      <div className="search-result-fullname text-gray-600 dark:text-gray-300">{searchUser.fullName}</div>
                     </div>
                   </Link>
                 ))}
               </div>
             ) : (
               <div className="no-results">
-                <p>No users found for "{searchQuery}"</p>
+                <p className="text-gray-900 dark:text-white">No users found for "{searchQuery}"</p>
               </div>
             )
           ) : (
             <div className="search-suggestions">
-              <h6>Recent searches</h6>
-              <p className="search-placeholder">Try searching for people, hashtags, or places</p>
+              <h6 className="text-gray-900 dark:text-white">Recent searches</h6>
+              <p className="search-placeholder text-gray-600 dark:text-gray-300">Try searching for people, hashtags, or places</p>
             </div>
           )}
         </div>

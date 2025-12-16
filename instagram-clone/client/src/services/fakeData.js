@@ -87,11 +87,11 @@ export const fakePosts = [
     id: '1',
     user: fakeUsers[0],
     image: '/src/assets/img1.jpg',
-    caption: 'Beautiful sunset at the beach 🌅 #sunset #beach #nature',
+    caption: 'Golden hour magic at the beach. Nothing beats this peaceful moment watching the sun dip into the ocean.',
     likes: 1234,
     comments: [
-      { id: '1', user: fakeUsers[1], text: 'Amazing shot! 📸', createdAt: '2h' },
-      { id: '2', user: fakeUsers[2], text: 'Love this view! 😍', createdAt: '1h' }
+      { id: '1', user: fakeUsers[1], text: 'Amazing shot!', createdAt: '2h' },
+      { id: '2', user: fakeUsers[2], text: 'Love this view!', createdAt: '1h' }
     ],
     createdAt: '3h',
     location: 'Malibu Beach, CA'
@@ -100,10 +100,10 @@ export const fakePosts = [
     id: '2',
     user: fakeUsers[1],
     image: '/src/assets/img2.jpg',
-    caption: 'Coffee and code ☕️💻 Perfect morning combo! #coding #coffee #developer',
+    caption: 'Morning fuel for another coding session. Clean setup, strong coffee, and endless possibilities ahead.',
     likes: 892,
     comments: [
-      { id: '3', user: fakeUsers[0], text: 'That setup looks clean! 🔥', createdAt: '30m' },
+      { id: '3', user: fakeUsers[0], text: 'That setup looks clean!', createdAt: '30m' },
       { id: '4', user: fakeUsers[3], text: 'What IDE are you using?', createdAt: '15m' }
     ],
     createdAt: '5h',
@@ -113,11 +113,11 @@ export const fakePosts = [
     id: '3',
     user: fakeUsers[2],
     image: '/src/assets/img3.jpg',
-    caption: 'Adventure awaits! 🏔️ #hiking #mountains #adventure #nature',
+    caption: 'Reached the summit after 3 hours of hiking. The view from up here makes every step worth it.',
     likes: 2156,
     comments: [
       { id: '5', user: fakeUsers[4], text: 'Incredible view! Where is this?', createdAt: '2h' },
-      { id: '6', user: fakeUsers[5], text: 'Need to visit this place! 🙌', createdAt: '1h' }
+      { id: '6', user: fakeUsers[5], text: 'Need to visit this place!', createdAt: '1h' }
     ],
     createdAt: '8h',
     location: 'Rocky Mountains, CO'
@@ -126,10 +126,10 @@ export const fakePosts = [
     id: '4',
     user: fakeUsers[3],
     image: '/src/assets/img4.jpg',
-    caption: 'Homemade pizza night! 🍕 Nothing beats fresh ingredients #foodie #pizza #homemade',
+    caption: 'Made this pizza from scratch tonight. Fresh basil from the garden and homemade dough - perfection.',
     likes: 567,
     comments: [
-      { id: '7', user: fakeUsers[0], text: 'Looks delicious! Recipe please? 🤤', createdAt: '45m' }
+      { id: '7', user: fakeUsers[0], text: 'Looks delicious! Recipe please?', createdAt: '45m' }
     ],
     createdAt: '12h',
     location: 'New York, NY'
@@ -138,11 +138,11 @@ export const fakePosts = [
     id: '5',
     user: fakeUsers[4],
     image: '/src/assets/img5.jpg',
-    caption: 'City lights never get old ✨ #citylife #nightphotography #urban',
+    caption: 'The city comes alive at night. Captured this skyline from my favorite rooftop spot downtown.',
     likes: 1789,
     comments: [
-      { id: '8', user: fakeUsers[2], text: 'Beautiful capture! 📷', createdAt: '3h' },
-      { id: '9', user: fakeUsers[1], text: 'Love the composition 👌', createdAt: '2h' }
+      { id: '8', user: fakeUsers[2], text: 'Beautiful capture!', createdAt: '3h' },
+      { id: '9', user: fakeUsers[1], text: 'Love the composition!', createdAt: '2h' }
     ],
     createdAt: '1d',
     location: 'Tokyo, Japan'
@@ -151,10 +151,10 @@ export const fakePosts = [
     id: '6',
     user: fakeUsers[5],
     image: '/src/assets/img6.jpg',
-    caption: 'Weekend vibes at the local market 🛒 Fresh produce and good energy! #weekend #market #fresh',
+    caption: 'Saturday morning at the farmers market. Supporting local vendors and getting the freshest ingredients.',
     likes: 934,
     comments: [
-      { id: '10', user: fakeUsers[3], text: 'Love supporting local! 💚', createdAt: '4h' }
+      { id: '10', user: fakeUsers[3], text: 'Love supporting local!', createdAt: '4h' }
     ],
     createdAt: '2d',
     location: 'Portland, OR'
@@ -163,10 +163,10 @@ export const fakePosts = [
     id: '7',
     user: fakeUsers[6],
     image: '/src/assets/img7.jpg',
-    caption: 'Nature therapy 🌲 Sometimes you need to disconnect to reconnect #nature #forest #peace',
+    caption: 'Deep in the forest where phone signals disappear and peace begins. Nature is the best therapist.',
     likes: 2341,
     comments: [
-      { id: '11', user: fakeUsers[2], text: 'So peaceful! 🧘♀️', createdAt: '1h' },
+      { id: '11', user: fakeUsers[2], text: 'So peaceful!', createdAt: '1h' },
       { id: '12', user: fakeUsers[4], text: 'Need this right now', createdAt: '30m' }
     ],
     createdAt: '6h',
@@ -176,10 +176,10 @@ export const fakePosts = [
     id: '8',
     user: fakeUsers[7],
     image: '/src/assets/img8.jpg',
-    caption: 'Brunch goals achieved! 🥞✨ #brunch #foodie #weekend #yummy',
+    caption: 'Sunday brunch done right. Fluffy pancakes, fresh berries, and maple syrup - weekend perfection.',
     likes: 1456,
     comments: [
-      { id: '13', user: fakeUsers[5], text: 'This looks incredible! 😋', createdAt: '2h' },
+      { id: '13', user: fakeUsers[5], text: 'This looks incredible!', createdAt: '2h' },
       { id: '14', user: fakeUsers[0], text: 'Recipe please!', createdAt: '1h' }
     ],
     createdAt: '4h',
@@ -189,10 +189,10 @@ export const fakePosts = [
     id: '9',
     user: fakeUsers[0],
     image: '/src/assets/img9.jpg',
-    caption: 'Book and coffee kind of Sunday ☕📚 #reading #coffee #sunday #cozy',
+    caption: 'Cozy Sunday afternoon with a good book and perfectly brewed coffee. Simple pleasures are the best.',
     likes: 987,
     comments: [
-      { id: '15', user: fakeUsers[1], text: 'Perfect Sunday vibes! 📖', createdAt: '3h' },
+      { id: '15', user: fakeUsers[1], text: 'Perfect Sunday vibes!', createdAt: '3h' },
       { id: '16', user: fakeUsers[3], text: 'What are you reading?', createdAt: '2h' }
     ],
     createdAt: '7h',
@@ -202,11 +202,11 @@ export const fakePosts = [
     id: '10',
     user: fakeUsers[1],
     image: '/src/assets/img1.jpg',
-    caption: 'Chasing sunsets and dreams 🌅 #sunset #beach #dreams #wanderlust',
+    caption: 'Another breathtaking sunset from this Greek island. Every evening here feels like a painting come to life.',
     likes: 3245,
     comments: [
-      { id: '17', user: fakeUsers[0], text: 'Stunning colors! 🎨', createdAt: '4h' },
-      { id: '18', user: fakeUsers[2], text: 'Take me there! ✈️', createdAt: '3h' }
+      { id: '17', user: fakeUsers[0], text: 'Stunning colors!', createdAt: '4h' },
+      { id: '18', user: fakeUsers[2], text: 'Take me there!', createdAt: '3h' }
     ],
     createdAt: '9h',
     location: 'Santorini, Greece'
@@ -215,10 +215,10 @@ export const fakePosts = [
     id: '11',
     user: fakeUsers[2],
     image: '/src/assets/img2.jpg',
-    caption: 'Urban jungle vibes 🏙️ #city #architecture #urban #photography',
+    caption: 'Manhattan from street level. The architecture here tells stories of ambition reaching toward the sky.',
     likes: 1678,
     comments: [
-      { id: '19', user: fakeUsers[5], text: 'Love the perspective! 📸', createdAt: '5h' },
+      { id: '19', user: fakeUsers[5], text: 'Love the perspective!', createdAt: '5h' },
       { id: '20', user: fakeUsers[1], text: 'Amazing shot!', createdAt: '4h' }
     ],
     createdAt: '11h',
@@ -228,11 +228,11 @@ export const fakePosts = [
     id: '12',
     user: fakeUsers[3],
     image: '/src/assets/img3.jpg',
-    caption: 'Workout complete! 💪 Feeling stronger every day #fitness #motivation #health',
+    caption: 'Just finished an intense workout session. Pushing limits and feeling stronger with each rep.',
     likes: 2134,
     comments: [
-      { id: '21', user: fakeUsers[3], text: 'You inspire me! 💪', createdAt: '6h' },
-      { id: '22', user: fakeUsers[0], text: 'Keep it up! 🔥', createdAt: '5h' }
+      { id: '21', user: fakeUsers[3], text: 'You inspire me!', createdAt: '6h' },
+      { id: '22', user: fakeUsers[0], text: 'Keep it up!', createdAt: '5h' }
     ],
     createdAt: '13h',
     location: 'Local Gym'
@@ -241,10 +241,10 @@ export const fakePosts = [
     id: '13',
     user: fakeUsers[4],
     image: '/src/assets/img4.jpg',
-    caption: 'Art speaks where words fail 🎨 #art #creativity #inspiration #gallery',
+    caption: 'Spent hours at the modern art museum today. This piece stopped me in my tracks - pure creative genius.',
     likes: 1892,
     comments: [
-      { id: '23', user: fakeUsers[2], text: 'Beautiful piece! 🖼️', createdAt: '7h' },
+      { id: '23', user: fakeUsers[2], text: 'Beautiful piece!', createdAt: '7h' },
       { id: '24', user: fakeUsers[4], text: 'So inspiring!', createdAt: '6h' }
     ],
     createdAt: '15h',
@@ -254,11 +254,11 @@ export const fakePosts = [
     id: '14',
     user: fakeUsers[5],
     image: '/src/assets/img5.jpg',
-    caption: 'Late night coding session 💻 Building something amazing! #coding #developer #latenight',
+    caption: 'Burning the midnight oil on this new project. When inspiration strikes, sleep can wait.',
     likes: 1234,
     comments: [
-      { id: '25', user: fakeUsers[5], text: 'What are you building? 🤔', createdAt: '8h' },
-      { id: '26', user: fakeUsers[3], text: 'Keep grinding! 💪', createdAt: '7h' }
+      { id: '25', user: fakeUsers[5], text: 'What are you building?', createdAt: '8h' },
+      { id: '26', user: fakeUsers[3], text: 'Keep grinding!', createdAt: '7h' }
     ],
     createdAt: '17h',
     location: 'Home Office'
@@ -267,10 +267,10 @@ export const fakePosts = [
     id: '15',
     user: fakeUsers[6],
     image: '/src/assets/img6.jpg',
-    caption: 'Fresh flowers, fresh start 🌸 #flowers #spring #newbeginnings #fresh',
+    caption: 'Spring has arrived and the flower market is bursting with color. These tulips brightened my entire day.',
     likes: 2567,
     comments: [
-      { id: '27', user: fakeUsers[1], text: 'So pretty! 🌺', createdAt: '9h' },
+      { id: '27', user: fakeUsers[1], text: 'So pretty!', createdAt: '9h' },
       { id: '28', user: fakeUsers[0], text: 'Love the colors!', createdAt: '8h' }
     ],
     createdAt: '19h',

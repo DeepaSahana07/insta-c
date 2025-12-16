@@ -50,7 +50,7 @@ const Sidebar = () => {
           </Link>
         </li>
         <li>
-          <Link to={`/profile/${user.username}`} className={isActive(`/profile/${user.username}`)}>
+          <Link to="/profile" className={isActive('/profile')}>
             <img src={user.profilePicture || '/src/assets/user1.jpg'} alt="Profile" className="rounded-circle" style={{width: '24px', height: '24px', marginRight: '16px'}} />
             Profile
           </Link>

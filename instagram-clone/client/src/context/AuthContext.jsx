@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -82,20 +83,8 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-      const user = existingUsers.find(u => u.email === email);
-      
-      if (!user) {
-        dispatch({ type: 'AUTH_FAIL', payload: 'No account found with this email.' });
-        return { success: false };
-      }
-      
-      if (user.password !== password) {
-        dispatch({ type: 'AUTH_FAIL', payload: 'Incorrect password.' });
-        return { success: false };
-      }
-      
-      const token = 'jwt-token-' + Date.now();
+      const response = await api.post('/auth/login', { email, password });
+      const { token, user } = response.data;
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -107,67 +96,31 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      dispatch({ type: 'AUTH_FAIL', payload: 'Login failed' });
+      const message = error.response?.data?.message || 'Login failed';
+      dispatch({ type: 'AUTH_FAIL', payload: message });
       return { success: false };
     }
   };
 
-  const register = async (formData) => {
+  const register = async (userData) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      const email = formData.get('email');
-      const username = formData.get('username');
-      
-      const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-      const userExists = existingUsers.find(u => u.email === email || u.username === username);
-      
-      if (userExists) {
-        const message = userExists.email === email ? 
-          'Account already exists with this email.' :
-          'Username already taken.';
-        dispatch({ type: 'AUTH_FAIL', payload: message });
-        return { success: false };
-      }
-      
-      let profilePictureUrl = `https://i.pravatar.cc/150?u=${username}`;
-      
-      // Handle file upload
-      const profilePictureFile = formData.get('profilePicture');
-      if (profilePictureFile && profilePictureFile.size > 0) {
-        // Convert file to base64 for localStorage
-        const reader = new FileReader();
-        profilePictureUrl = await new Promise((resolve) => {
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(profilePictureFile);
-        });
-      }
-      
-      const newUser = {
-        _id: 'user-' + Date.now(),
-        username: username,
-        email: email,
-        fullName: formData.get('fullName'),
-        password: formData.get('password'),
-        profilePicture: profilePictureUrl
-      };
-      
-      existingUsers.push(newUser);
-      localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
-      
-      const token = 'jwt-token-' + Date.now();
+      const response = await api.post('/auth/register', userData);
+      const { token, user } = response.data;
       
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(newUser));
+      localStorage.setItem('user', JSON.stringify(user));
       
       dispatch({
         type: 'AUTH_SUCCESS',
-        payload: { user: newUser, token }
+        payload: { user, token }
       });
       
       return { success: true };
     } catch (error) {
-      dispatch({ type: 'AUTH_FAIL', payload: 'Registration failed' });
+      const message = error.response?.data?.message || 'Registration failed';
+      dispatch({ type: 'AUTH_FAIL', payload: message });
       return { success: false };
     }
   };
@@ -181,13 +134,46 @@ export const AuthProvider = ({ children }) => {
   const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
   }, []);
+  
+  const updateUserCounts = useCallback((updates) => {
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const updatedUser = { ...currentUser, ...updates };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    
+    dispatch({
+      type: 'AUTH_SUCCESS',
+      payload: { user: updatedUser, token: state.token }
+    });
+  }, [state.token]);
+  
+  const verifyPassword = async (email, password) => {
+    try {
+      const response = await api.post('/auth/verify-password', { email, password });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Password verification failed');
+    }
+  };
+  
+  const switchAccount = async (user, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    
+    dispatch({
+      type: 'AUTH_SUCCESS',
+      payload: { user, token }
+    });
+  };
 
   const value = {
     ...state,
     login,
     register,
     logout,
-    clearError
+    clearError,
+    updateUserCounts,
+    verifyPassword,
+    switchAccount
   };
 
   return (
@@ -197,10 +183,12 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => {
+const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
+
+export { useAuth };

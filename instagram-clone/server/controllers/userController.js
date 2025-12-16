@@ -6,17 +6,26 @@ export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username })
       .populate('followers', 'username profilePicture fullName')
-      .populate('following', 'username profilePicture fullName')
-      .populate({
-        path: 'posts',
-        options: { sort: { createdAt: -1 } }
-      });
+      .populate('following', 'username profilePicture fullName');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({ success: true, user });
+    // Get only posts created by this specific user
+    const userPosts = await Post.find({ user: user._id })
+      .populate('user', 'username profilePicture fullName')
+      .populate('likes', 'username')
+      .populate('comments.user', 'username profilePicture')
+      .sort({ createdAt: -1 });
+
+    // Add posts to user object
+    const userWithPosts = {
+      ...user.toObject(),
+      posts: userPosts
+    };
+
+    res.json({ success: true, user: userWithPosts });
   } catch (error) {
     console.error('Get user profile error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -42,10 +51,14 @@ export const followUser = async (req, res) => {
       // Unfollow
       currentUser.following.pull(userToFollow._id);
       userToFollow.followers.pull(currentUser._id);
+      currentUser.followingCount = Math.max(0, (currentUser.followingCount || 0) - 1);
+      userToFollow.followersCount = Math.max(0, (userToFollow.followersCount || 0) - 1);
     } else {
       // Follow
       currentUser.following.push(userToFollow._id);
       userToFollow.followers.push(currentUser._id);
+      currentUser.followingCount = (currentUser.followingCount || 0) + 1;
+      userToFollow.followersCount = (userToFollow.followersCount || 0) + 1;
     }
 
     await currentUser.save();
@@ -54,7 +67,9 @@ export const followUser = async (req, res) => {
     res.json({
       success: true,
       message: isFollowing ? 'Unfollowed successfully' : 'Followed successfully',
-      isFollowing: !isFollowing
+      isFollowing: !isFollowing,
+      currentUserFollowingCount: currentUser.followingCount,
+      targetUserFollowersCount: userToFollow.followersCount
     });
   } catch (error) {
     console.error('Follow user error:', error);
@@ -139,22 +154,56 @@ export const searchUsers = async (req, res) => {
   try {
     const { query } = req.query;
     
-    if (!query) {
-      return res.json({ success: true, users: [] });
+    let users;
+    
+    if (!query || query.trim() === '') {
+      // Return all users for account switching
+      users = await User.find({})
+        .select('username fullName profilePicture email followers')
+        .limit(20);
+    } else {
+      // Search users by query
+      users = await User.find({
+        $or: [
+          { username: { $regex: query, $options: 'i' } },
+          { fullName: { $regex: query, $options: 'i' } }
+        ]
+      })
+      .select('username fullName profilePicture email followers')
+      .limit(10);
     }
-
-    const users = await User.find({
-      $or: [
-        { username: { $regex: query, $options: 'i' } },
-        { fullName: { $regex: query, $options: 'i' } }
-      ]
-    })
-    .select('username fullName profilePicture followers')
-    .limit(10);
 
     res.json({ success: true, users });
   } catch (error) {
     console.error('Search users error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Delete all posts by this user
+    await Post.deleteMany({ user: userId });
+    
+    // Remove user from followers/following lists of other users
+    await User.updateMany(
+      { followers: userId },
+      { $pull: { followers: userId }, $inc: { followersCount: -1 } }
+    );
+    
+    await User.updateMany(
+      { following: userId },
+      { $pull: { following: userId }, $inc: { followingCount: -1 } }
+    );
+    
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+    
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Delete account error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

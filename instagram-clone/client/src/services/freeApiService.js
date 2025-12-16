@@ -23,14 +23,58 @@ class FreeAPIService {
         const userResponse = await axios.get(`${this.randomUser}?seed=${post.userId}`);
         const user = userResponse.data.results[0];
         
+        // Generate relevant captions based on image category
+        const imageCategories = [
+          { type: 'nature', captions: [
+            'Nature never fails to amaze me with its endless beauty 🌿',
+            'Found this peaceful spot during my morning hike. Pure serenity.',
+            'Sometimes you need to disconnect to reconnect with nature.',
+            'Golden hour magic in the great outdoors ✨'
+          ]},
+          { type: 'city', captions: [
+            'City lights and urban nights. Love the energy here! 🏙️',
+            'Architecture tells the story of human creativity and ambition.',
+            'Exploring hidden corners of the city, one street at a time.',
+            'The hustle and bustle never gets old in this concrete jungle.'
+          ]},
+          { type: 'food', captions: [
+            'Good food = good mood. This was absolutely delicious! 🍽️',
+            'Trying new flavors and loving every bite of this culinary adventure.',
+            'Food brings people together and creates the best memories.',
+            'When the presentation is as good as the taste 👨‍🍳'
+          ]},
+          { type: 'travel', captions: [
+            'Wanderlust satisfied. This place exceeded all expectations! ✈️',
+            'Travel opens your mind to new perspectives and endless possibilities.',
+            'Collecting moments, not things. This trip was unforgettable.',
+            'Every destination has a story to tell. This one spoke to my soul.'
+          ]},
+          { type: 'lifestyle', captions: [
+            'Living my best life, one moment at a time 💫',
+            'Simple pleasures bring the greatest joy to everyday life.',
+            'Grateful for these perfect moments that make life beautiful.',
+            'Finding happiness in the little things that matter most.'
+          ]}
+        ];
+        
+        const categoryIndex = index % imageCategories.length;
+        const category = imageCategories[categoryIndex];
+        const captionIndex = Math.floor(Math.random() * category.captions.length);
+        
+        const aestheticUsernames = [
+          'wanderlust_soul', 'coffee_vibes', 'sunset_chaser', 'ocean_dreams', 'city_lights',
+          'nature_lover', 'art_enthusiast', 'foodie_adventures', 'travel_diaries', 'creative_mind',
+          'golden_hour', 'street_photographer', 'minimalist_life', 'vintage_soul', 'modern_nomad'
+        ];
+        
         return {
           id: post.id,
-          caption: post.title,
+          caption: category.captions[captionIndex],
           content: post.body,
           image: `${this.picsum}/600/600?random=${post.id + index * 100}`,
           user: {
             id: post.userId,
-            username: user.login.username,
+            username: aestheticUsernames[index % aestheticUsernames.length] || user.login.username,
             name: `${user.name.first} ${user.name.last}`,
             avatar: user.picture.medium
           },
@@ -51,11 +95,32 @@ class FreeAPIService {
           const fallbackResponse = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10', {
             timeout: 5000
           });
-          return fallbackResponse.data.map(post => ({
+          const fallbackCaptions = [
+            'Captured this beautiful moment during my afternoon stroll 🌅',
+            'Sometimes the best shots are the unexpected ones 📸',
+            'Finding beauty in everyday moments that matter most.',
+            'Perfect lighting makes all the difference in photography ✨',
+            'Grateful for these peaceful moments of pure tranquility.',
+            'Every day brings new discoveries and adventures to explore.',
+            'Simple pleasures bring the greatest joy to life 😊',
+            'Life is full of beautiful surprises waiting to be found.',
+            'Taking time to appreciate the little things around us.',
+            'Another day, another adventure in this amazing journey.'
+          ];
+          
+          const aestheticUsernames = [
+            'wanderlust_soul', 'coffee_vibes', 'sunset_chaser', 'ocean_dreams', 'city_lights',
+            'nature_lover', 'art_enthusiast', 'foodie_adventures', 'travel_diaries', 'creative_mind'
+          ];
+          
+          return fallbackResponse.data.map((post, index) => ({
             id: post.id,
-            caption: post.title,
+            caption: fallbackCaptions[index % fallbackCaptions.length],
             image: `https://picsum.photos/600/600?random=${post.id}`,
-            user: { username: `user${post.userId}`, avatar: `https://i.pravatar.cc/150?img=${post.userId}` },
+            user: { 
+              username: aestheticUsernames[index % aestheticUsernames.length],
+              avatar: `https://i.pravatar.cc/150?img=${post.userId}` 
+            },
             likes: Math.floor(Math.random() * 100),
             comments: [],
             createdAt: '1h'
@@ -101,9 +166,13 @@ class FreeAPIService {
         const userResponse = await axios.get(`${this.randomUser}?seed=${comment.id}`);
         const user = userResponse.data.results[0];
         
+        // Filter to English-like comments only
+        const englishText = comment.body.replace(/[^\x00-\x7F]/g, '').substring(0, 100);
+        if (englishText.length < 10) return null;
+        
         return {
           id: comment.id,
-          text: comment.body.substring(0, 100),
+          text: englishText,
           user: {
             username: user.login.username,
             avatar: user.picture.thumbnail
@@ -112,7 +181,7 @@ class FreeAPIService {
         };
       }));
       
-      return enhancedComments;
+      return enhancedComments.filter(comment => comment !== null);
     } catch (error) {
       return [];
     }
@@ -123,9 +192,9 @@ class FreeAPIService {
     return [
       {
         id: 1,
-        caption: 'Beautiful sunset',
+        caption: 'Lost in the beauty of this ancient library 📚 Every book holds a universe of stories waiting to be discovered.',
         image: '/src/assets/img1.jpg',
-        user: { username: 'demo_user', avatar: '/src/assets/user1.jpg' },
+        user: { username: 'bookworm_soul', avatar: '/src/assets/user1.jpg' },
         likes: 123,
         comments: [],
         createdAt: '2h'
@@ -150,10 +219,16 @@ class FreeAPIService {
 
   // Simulate like action
   likePost(postId) {
-    const likes = JSON.parse(localStorage.getItem('likes') || '{}');
-    likes[postId] = !likes[postId];
-    localStorage.setItem('likes', JSON.stringify(likes));
-    return Promise.resolve({ liked: likes[postId] });
+    const globalLikes = JSON.parse(localStorage.getItem('globalLikes') || '{}');
+    const currentLike = globalLikes[postId] || { liked: false, count: 0 };
+    
+    globalLikes[postId] = {
+      liked: !currentLike.liked,
+      count: currentLike.liked ? currentLike.count - 1 : currentLike.count + 1
+    };
+    
+    localStorage.setItem('globalLikes', JSON.stringify(globalLikes));
+    return Promise.resolve({ liked: globalLikes[postId].liked, count: globalLikes[postId].count });
   }
 
   // Simulate follow action

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
@@ -34,12 +34,13 @@ const Layout = ({ children }) => {
   );
 };
 
-function App() {
+const AppContent = () => {
+  const { isDark } = useTheme();
+  
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <Router>
-          <div className="App">
+    <AuthProvider>
+      <Router>
+        <div className={`App ${isDark ? 'dark' : ''} bg-white dark:bg-gray-900 min-h-screen`}>
             <Routes>
               {/* Root route - redirect based on auth */}
               <Route path="/" element={<RootRedirect />} />
@@ -90,6 +91,16 @@ function App() {
                 }
               />
               <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Profile />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/profile/:username"
                 element={
                   <ProtectedRoute>
@@ -106,6 +117,13 @@ function App() {
           </div>
         </Router>
       </AuthProvider>
+  );
+};
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
     </ThemeProvider>
   );
 }

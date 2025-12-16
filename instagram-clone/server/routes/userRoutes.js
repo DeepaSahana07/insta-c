@@ -4,7 +4,8 @@ import {
   followUser,
   getSuggestedUsers,
   updateProfile,
-  searchUsers
+  searchUsers,
+  deleteAccount
 } from '../controllers/userController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { upload } from '../middleware/uploadMiddleware.js';
@@ -16,5 +17,6 @@ router.post('/follow/:userId', protect, followUser);
 router.get('/suggested', protect, getSuggestedUsers);
 router.put('/profile', protect, upload.single('profilePicture'), updateProfile);
 router.get('/search', protect, searchUsers);
+router.delete('/account', protect, deleteAccount);
 
 export default router;

@@ -9,8 +9,7 @@ const Register = () => {
     password: '',
     fullName: ''
   });
-  const [profilePicture, setProfilePicture] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [profilePictureUrl, setProfilePictureUrl] = useState('');
   const { register, isAuthenticated, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
@@ -31,32 +30,17 @@ const Register = () => {
     });
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setProfilePicture(file);
-    
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setPreview(null);
-    }
+  const handleUrlChange = (e) => {
+    setProfilePictureUrl(e.target.value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const submitData = new FormData();
-    submitData.append('username', formData.username);
-    submitData.append('email', formData.email);
-    submitData.append('password', formData.password);
-    submitData.append('fullName', formData.fullName);
-    if (profilePicture) {
-      submitData.append('profilePicture', profilePicture);
-    }
+    const submitData = {
+      ...formData,
+      profilePicture: profilePictureUrl || `https://i.pravatar.cc/150?u=${formData.username}`
+    };
 
     const result = await register(submitData);
     if (result.success) {
@@ -117,22 +101,19 @@ const Register = () => {
             minLength="6"
           />
 
-          <div className="file-upload-container">
-            <label className="file-upload-label">
-              Choose Profile Picture (optional)
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="file-input-hidden"
-              />
-            </label>
-            {preview && (
-              <div className="preview-container">
-                <img src={preview} alt="Preview" className="preview-image" />
-              </div>
-            )}
-          </div>
+          <input
+            type="url"
+            name="profilePictureUrl"
+            placeholder="Profile Picture URL (optional)"
+            value={profilePictureUrl}
+            onChange={handleUrlChange}
+            className="login-input"
+          />
+          {profilePictureUrl && (
+            <div className="preview-container">
+              <img src={profilePictureUrl} alt="Preview" className="preview-image" onError={(e) => e.target.style.display = 'none'} />
+            </div>
+          )}
 
           <button
             type="submit"

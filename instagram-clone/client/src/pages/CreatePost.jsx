@@ -1,36 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../services/api';
 
 const CreatePost = () => {
-  const { user } = useAuth();
+  const { user, updateUserCounts } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    image: null,
+    imageUrl: '',
     caption: '',
     location: ''
   });
-  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setFormData({
-      ...formData,
-      image: file
-    });
 
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setPreview(null);
-    }
-  };
 
   const handleChange = (e) => {
     setFormData({
@@ -42,8 +26,8 @@ const CreatePost = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.image) {
-      setError('Please select an image');
+    if (!formData.imageUrl) {
+      setError('Please enter an image URL');
       return;
     }
 
@@ -56,29 +40,20 @@ const CreatePost = () => {
         return;
       }
 
-      // Simulate post creation with localStorage
-      const existingPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
-      
-      const newPost = {
-        id: Date.now(),
-        user: {
-          id: user.id,
-          username: user.username,
-          name: user.fullName,
-          avatar: user.profilePicture || '/src/assets/user1.jpg'
-        },
-        image: preview,
+      // Create post via backend API
+      const postData = {
+        imageUrl: formData.imageUrl,
         caption: formData.caption,
-        location: formData.location,
-        likes: Math.floor(Math.random() * 100),
-        comments: [],
-        timestamp: new Date().toISOString(),
-        liked: false,
-        createdAt: 'now'
+        location: formData.location
       };
-
-      existingPosts.unshift(newPost);
-      localStorage.setItem('userPosts', JSON.stringify(existingPosts));
+      
+      const response = await apiService.createPost(postData);
+      
+      if (response.data.success) {
+        // Update user's post count
+        const newPostsCount = (user.postsCount || 0) + 1;
+        updateUserCounts({ postsCount: newPostsCount });
+      }
 
       navigate('/home');
     } catch (error) {
@@ -90,9 +65,9 @@ const CreatePost = () => {
 
   return (
     <div className="main-content">
-      <div className="create-post-container">
+      <div className="create-post-container max-w-4xl mx-auto px-4">
         <div className="create-post-card">
-          <h2 className="create-post-title">Create New Post</h2>
+          <h2 className="create-post-title text-gray-900 dark:text-white">Create New Post</h2>
 
           {error && (
             <div className="auth-error">
@@ -101,26 +76,28 @@ const CreatePost = () => {
           )}
 
           <form onSubmit={handleSubmit} className="create-post-form">
-            {/* Image Upload */}
+            {/* Image URL */}
             <div className="form-group">
-              <label className="form-label">Select Image</label>
+              <label className="form-label text-gray-900 dark:text-white">Image URL</label>
               <input
-                type="file"
-                className="file-input"
-                accept="image/*"
-                onChange={handleImageChange}
+                type="url"
+                className="location-input"
+                name="imageUrl"
+                placeholder="Enter image URL"
+                value={formData.imageUrl}
+                onChange={handleChange}
                 required
               />
-              {preview && (
+              {formData.imageUrl && (
                 <div className="image-preview">
-                  <img src={preview} alt="Preview" className="preview-image" />
+                  <img src={formData.imageUrl} alt="Preview" className="preview-image" onError={(e) => e.target.style.display = 'none'} />
                 </div>
               )}
             </div>
 
             {/* Caption */}
             <div className="form-group">
-              <label className="form-label">Caption</label>
+              <label className="form-label text-gray-900 dark:text-white">Caption</label>
               <textarea
                 className="caption-input"
                 name="caption"
@@ -130,14 +107,14 @@ const CreatePost = () => {
                 onChange={handleChange}
                 maxLength="2200"
               />
-              <div className="caption-counter">
+              <div className="caption-counter text-gray-600 dark:text-gray-300">
                 {formData.caption.length}/2200
               </div>
             </div>
 
             {/* Location */}
             <div className="form-group">
-              <label className="form-label">Location</label>
+              <label className="form-label text-gray-900 dark:text-white">Location</label>
               <input
                 type="text"
                 className="location-input"
@@ -156,8 +133,8 @@ const CreatePost = () => {
                 className="user-avatar"
               />
               <div className="user-info">
-                <div className="username">{user?.username}</div>
-                <div className="fullname">{user?.fullName}</div>
+                <div className="username text-gray-900 dark:text-white">{user?.username}</div>
+                <div className="fullname text-gray-600 dark:text-gray-300">{user?.fullName}</div>
               </div>
             </div>
 
@@ -165,7 +142,7 @@ const CreatePost = () => {
             <button
               type="submit"
               className="share-btn"
-              disabled={loading || !formData.image}
+              disabled={loading || !formData.imageUrl}
             >
               {loading ? 'Sharing...' : 'Share Post'}
             </button>
